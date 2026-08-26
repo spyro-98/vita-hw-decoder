@@ -11,7 +11,7 @@ if [[ -z "${VITASDK:-}" ]]; then
 fi
 vita_sdk="$VITASDK"
 prefix="${VITA_HW_DECODER_FFMPEG_ROOT:-$repo_root/build/deps/ffmpeg-vita-hw}"
-jobs="${VITATUBE_FFMPEG_JOBS:-8}"
+jobs="${VITAWAVE_FFMPEG_JOBS:-8}"
 
 ffmpeg_commit="ea3d24bbe3c58b171e55fe2151fc7ffaca3ab3d2"
 wiliwili_commit="88e5876bea9502d06f46a8656e3530684d3aaf7d"
