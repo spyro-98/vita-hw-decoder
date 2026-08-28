@@ -5,6 +5,11 @@ by the public `h264_vita`/SceVideodec path and rendered as NV12 surfaces through
 vita2d. This package is hardware-only: initialization returns an error instead
 of silently falling back to CPU H.264.
 
+<p align="center">
+  <img src="screenshots/hardware-decoder.jpeg" alt="Hardware H.264 decoding on PlayStation Vita">
+</p>
+<p align="center"><sub>Hardware H.264 playback on PlayStation Vita</sub></p>
+
 ## Integrate in three steps
 
 ```sh
