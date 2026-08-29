@@ -36,6 +36,27 @@ int result = vita_hw_decoder_open(player, &config);
 Copy `reAvPlayer.suprx` to `app0:modules/reAvPlayer.suprx` in the VPK. The
 complete render loop is in `examples/local_file.c`.
 
+## Current playback contract
+
+- H.264 is decoded only by the public `h264_vita`/SceVideodec path; this package
+  never hides a CPU fallback.
+- MOV/MP4 and Matroska sources may contain optional AAC audio. The initial
+  zero-based audio ordinal comes from `VitaHwDecoderPlayerConfig.audio_track`.
+- `vita_hw_decoder_select_audio_track()` restarts only the audio cursor at a
+  supplied media timestamp, retaining the live video pipeline, pause, and
+  volume state.
+- `start_position_ms`, seeking, stream-reported bitrate, duration, decoded/shown
+  counters, and dropped-frame counters are exposed through the public config and
+  status structures. Runtime seeks reuse the open demuxers, flush to the target
+  keyframe, and rebuild only the decode pipelines; a full reopen remains the
+  recovery fallback.
+- A stream factory can represent a Vita file or an authenticated remote reader,
+  but every `open()` call must return a fresh readable, seekable cursor.
+
+VitaMediaDeck layers track metadata, embedded text-subtitle demux, cover/frame
+previews, resume history, and player UI above this package. Those policies are
+intentionally not part of the standalone decoder API.
+
 ## Use both backends in one app
 
 `vita-hw-decoder` and `vita-sw-decoder` use the same lifecycle and stream
@@ -48,7 +69,8 @@ reported by FFmpeg, with the container bitrate used only when the stream does
 not provide one. A zero value means the source did not advertise a bitrate.
 `VitaHwDecoderPlayerConfig.audio_track` selects a zero-based AAC stream
 ordinal, and `vita_hw_decoder_select_audio_track()` changes it at the supplied
-playback timestamp without losing pause or volume state.
+playback timestamp without interrupting the video decoder or losing pause and
+volume state.
 
 The source factory creates two independent seekable cursors (audio and video).
 It therefore works with local files and with remote Range readers. Supported
@@ -68,6 +90,15 @@ Installed consumers may use `find_package(VitaHwDecoder CONFIG REQUIRED)` and
 link `VitaHwDecoder::VitaHwDecoder`. The installed package carries its pinned
 FFmpeg static archives, license texts and corresponding source, so consumers do
 not need to reconstruct its private link path.
+
+## Related repositories
+
+| Repository | Relationship |
+| --- | --- |
+| [`VitaMediaDeck`](https://github.com/spyro-98/VitaMediaDeck) | Main application and hardware-first/software-fallback orchestrator |
+| [`vita-sw-decoder`](https://github.com/spyro-98/vita-sw-decoder) | API-compatible CPU H.264 fallback |
+| [`vita-https`](https://github.com/spyro-98/vita-https) | Hardened seekable HTTPS Range source used by WebDAV playback |
+| [`VitaMediaDeck-Transcoder`](https://github.com/spyro-98/VitaMediaDeck-Transcoder) | Optional desktop producer of compatible H.264/AAC Matroska files |
 
 Licensed GPL-3.0-only. See `THIRD_PARTY_NOTICES.md` for FFmpeg, wiliwili,
 ReAvPlayer and VitaSDK requirements.
