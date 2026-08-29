@@ -17,7 +17,7 @@
  * eight-slot copied ring remains the bounded CPU fallback. */
 #define SOFTWARE_VIDEO_FRAME_SLOTS 16
 #define SOFTWARE_VIDEO_COPY_FRAME_SLOTS 8
-#define SOFTWARE_VIDEO_ZERO_COPY_SURFACES 20
+#define SOFTWARE_VIDEO_ZERO_COPY_SURFACES 12
 
 typedef struct SoftwareVideoZeroSurface {
 	void *pixels;

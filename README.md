@@ -53,12 +53,12 @@ complete render loop is in `examples/local_file.c`.
 ## Current playback contract
 
 - H.264 is decoded only by the public `h264_vita`/SceVideodec path; this package
-  never hides a CPU fallback. Decoded YUV is copied into the bounded P2 display
-  ring; the experimental direct-output pool is disabled to avoid silent
-  first-frame stalls and excessive CDRAM reservation on retail hardware. The
-  copied U/V plane uses GXM's matching `YUV420P2` sampling format, and the last
-  displayed surface counts as available between 24 fps video deadlines so the
-  UI cannot report false buffering.
+  never hides a CPU fallback. SceVideodec writes directly into a twelve-surface
+  NV12 pool; the copied P2 ring is allocated only if that pool is unavailable,
+  rather than reserving both simultaneously. This keeps the hardware output
+  visible while bounding CDRAM use. The last displayed surface counts as
+  available between 24 fps video deadlines so the UI cannot report false
+  buffering.
 - MOV/MP4 and Matroska sources may contain optional AAC audio. The initial
   zero-based audio ordinal comes from `VitaHwDecoderPlayerConfig.audio_track`;
   an ordinal outside the playable AAC snapshot is clamped to track zero during
@@ -97,8 +97,9 @@ complete render loop is in `examples/local_file.c`.
   first decoded video frame. Startup
   requires that frame within 2.5 seconds and fails cleanly if `h264_vita`
   accepts the stream but produces no picture, allowing an application-level
-  Auto policy to reopen the CPU backend. Seek first-frame waits remain capped
-  at 600 ms rather than waiting for a multi-frame cushion. If a selected audio
+  Auto policy to reopen the CPU backend. Seek first-frame waits are capped at
+  1.5 seconds and return a timeout when no picture exists, rather than releasing
+  audio into a permanently empty video queue. If a selected audio
   stream reaches clean EOF before the
   video, clock ownership moves to the monotonic presentation clock without
   clearing the selected audio pipeline, so position remains continuous, the

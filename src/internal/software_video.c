@@ -56,7 +56,7 @@ static int hardware_raster_supported(uint32_t width, uint32_t height) {
 #endif
 
 #ifndef SOFTWARE_VIDEO_HARDWARE_DIRECT_ENABLED
-#define SOFTWARE_VIDEO_HARDWARE_DIRECT_ENABLED 0
+#define SOFTWARE_VIDEO_HARDWARE_DIRECT_ENABLED 1
 #endif
 
 #ifndef VITA_HW_DECODER_HAS_H264_VITA
@@ -623,7 +623,9 @@ static int open_h264_decoder(SoftwareVideoState *st, AVStream *stream,
 			decoder->opaque = st;
 			decoder->get_buffer2 = zero_copy_get_buffer2;
 			st->zero_copy = 1;
-			st->queue_capacity = SOFTWARE_VIDEO_FRAME_SLOTS;
+			/* Four retained references plus an eight-frame presentation queue fit
+			 * inside the bounded twelve-surface pool used by Vita-class streams. */
+			st->queue_capacity = SOFTWARE_VIDEO_COPY_FRAME_SLOTS;
 #else
 			decoder->pix_fmt = AV_PIX_FMT_YUV420P;
 #endif
@@ -1031,40 +1033,43 @@ int vita_hw_software_video_start(SoftwareVideoState *st, AVFormatContext *demux,
 	st->pitch = pitch;
 	st->frame_bytes = frame_bytes;
 
-	/* Keep the copied ring allocated even when hardware direct rendering is
-	 * available. It is the immediate, in-process landing zone if h264_vita
-	 * rejects the first SPS/AU and the startup packets are replayed on CPU. */
+	/* Hardware-only builds do not need a copied ring beside the direct pool.
+	 * Allocating both consumed roughly twenty megabytes of CDRAM and often forced
+	 * the known-good SceVideodec surface path back onto copied output. */
 	uint64_t buffer_started_us = sceKernelGetProcessTimeWide();
-	int buffer_ret = reuse_buffers ? 0 : allocate_copy_ring(st);
-	if (buffer_ret < 0) {
-		log_printf("software video: P2 ring allocation failed -> %d",
-		           buffer_ret);
-		release_frame_buffers(st);
-		return buffer_ret;
-	}
-	if (!reuse_buffers)
-		st->ring_memory_bytes = st->slots[0].allocation_size *
-		                       SOFTWARE_VIDEO_COPY_FRAME_SLOTS;
+	int buffer_ret = 0;
 #if VITA_HW_DECODER_HAS_H264_VITA
 	if (!reuse_buffers && SOFTWARE_VIDEO_HARDWARE_DIRECT_ENABLED &&
 	    st->hardware_runtime_ready) {
 		buffer_ret = allocate_zero_copy_pool(st);
 		if (buffer_ret >= 0) {
 			st->hardware_direct_available = 1;
-			st->ring_memory_bytes += st->zero_surfaces[0].allocation_size *
+			st->ring_memory_bytes = st->zero_surfaces[0].allocation_size *
 			                         SOFTWARE_VIDEO_ZERO_COPY_SURFACES;
 		} else {
-			/* Partial pool allocations cannot be used, but the copied ring is
-			 * independent and remains valid. */
+			/* Partial direct allocations cannot be used. Release them before
+			 * allocating the independent copied ring so peak CDRAM remains bounded. */
 			log_printf("software video: direct CDRAM rendering unavailable -> 0x%08X; using copied output",
 			           (unsigned)buffer_ret);
 			for (int i = 0; i < SOFTWARE_VIDEO_FRAME_SLOTS; i++)
 				av_frame_free(&st->slots[i].frame);
 			for (int i = 0; i < SOFTWARE_VIDEO_ZERO_COPY_SURFACES; i++)
 				free_zero_surface(&st->zero_surfaces[i]);
+			buffer_ret = 0;
 		}
 	}
 #endif
+	if (!reuse_buffers && !st->hardware_direct_available) {
+		buffer_ret = allocate_copy_ring(st);
+		if (buffer_ret < 0) {
+			log_printf("software video: P2 ring allocation failed -> %d",
+			           buffer_ret);
+			release_frame_buffers(st);
+			return buffer_ret;
+		}
+		st->ring_memory_bytes = st->slots[0].allocation_size *
+		                       SOFTWARE_VIDEO_COPY_FRAME_SLOTS;
+	}
 	log_printf("software video: frame pool %s setup=%llu ms memory=%u KiB",
 	           reuse_buffers ? "reused" : "allocated",
 	           (unsigned long long)((sceKernelGetProcessTimeWide() -
