@@ -9,7 +9,7 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
       message(FATAL_ERROR "VITASDK is required")
     endif()
   endif()
-  project(vita_hw_decoder VERSION 1.0.0 LANGUAGES C)
+  project(vita_hw_decoder VERSION 2.0.0 LANGUAGES C)
 endif()
 
 include(GNUInstallDirs)
@@ -34,7 +34,10 @@ add_library(vita_hw_decoder STATIC
   src/internal/elementary_audio.c
   src/internal/vita_aac_decoder.c)
 add_library(VitaHwDecoder::VitaHwDecoder ALIAS vita_hw_decoder)
-set_target_properties(vita_hw_decoder PROPERTIES EXPORT_NAME VitaHwDecoder)
+set_target_properties(vita_hw_decoder PROPERTIES
+  EXPORT_NAME VitaHwDecoder
+  VERSION 2.0.0
+  SOVERSION 2)
 
 target_include_directories(vita_hw_decoder
   PUBLIC
@@ -79,7 +82,7 @@ configure_package_config_file(cmake/VitaHwDecoderConfig.cmake.in
   INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/VitaHwDecoder)
 write_basic_package_version_file(
   ${CMAKE_CURRENT_BINARY_DIR}/VitaHwDecoderConfigVersion.cmake
-  VERSION 1.0.0 COMPATIBILITY SameMajorVersion)
+  VERSION 2.0.0 COMPATIBILITY SameMajorVersion)
 install(FILES
   ${CMAKE_CURRENT_BINARY_DIR}/VitaHwDecoderConfig.cmake
   ${CMAKE_CURRENT_BINARY_DIR}/VitaHwDecoderConfigVersion.cmake
