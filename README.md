@@ -53,10 +53,10 @@ complete render loop is in `examples/local_file.c`.
 ## Current playback contract
 
 - H.264 is decoded only by the public `h264_vita`/SceVideodec path; this package
-  never hides a CPU fallback. SceVideodec writes directly into a twelve-surface
-  NV12 pool; the copied P2 ring is allocated only if that pool is unavailable,
-  rather than reserving both simultaneously. This keeps the hardware output
-  visible while bounding CDRAM use. The last displayed surface counts as
+  never hides a CPU fallback. Presentation follows the known-working online
+  renderer contract: GXM samples the decoder's NV12/P2 surfaces as `YVU420P2`,
+  with the original twenty-surface direct pool and an independent copied ring
+  available for startup fallback. The last displayed surface counts as
   available between 24 fps video deadlines so the UI cannot report false
   buffering.
 - MOV/MP4 and Matroska sources may contain optional AAC audio. The initial
@@ -88,8 +88,9 @@ complete render loop is in `examples/local_file.c`.
   valid H.264 random-access picture, decode the required preroll, and publish
   frames only from the requested timestamp. Only the decode pipelines are
   rebuilt; after the owner fences GXM and calls
-  `vita_hw_decoder_prepare_background_restart()`, same-size seeks retain and
-  reuse their CDRAM/AVFrame pool without waiting for vita2d on the worker. A
+  `vita_hw_decoder_prepare_background_restart()`, the video surfaces use the
+  conservative full teardown/reallocation lifecycle proven by the online
+  player, avoiding stale GXM or AVFrame ownership across a seek. A
   normal close keeps the conservative render wait, and a full reopen remains
   the recovery fallback for non-cancellation failures. A seek at the reported
   duration is clamped inside the video-stream end by at least 250 ms so the final

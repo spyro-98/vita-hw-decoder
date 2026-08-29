@@ -17,7 +17,7 @@
  * eight-slot copied ring remains the bounded CPU fallback. */
 #define SOFTWARE_VIDEO_FRAME_SLOTS 16
 #define SOFTWARE_VIDEO_COPY_FRAME_SLOTS 8
-#define SOFTWARE_VIDEO_ZERO_COPY_SURFACES 12
+#define SOFTWARE_VIDEO_ZERO_COPY_SURFACES 20
 
 typedef struct SoftwareVideoZeroSurface {
 	void *pixels;
@@ -67,8 +67,7 @@ typedef struct {
 	int continuous_high_fps;
 	int queue_capacity;
 	uint64_t initial_position_ms;
-	int64_t timeline_origin_us;
-	int initial_preroll_complete;
+	int initial_keyframe_found;
 
 	SoftwareVideoFrameSlot slots[SOFTWARE_VIDEO_FRAME_SLOTS];
 	SoftwareVideoZeroSurface zero_surfaces[SOFTWARE_VIDEO_ZERO_COPY_SURFACES];
