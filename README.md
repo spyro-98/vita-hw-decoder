@@ -55,7 +55,10 @@ complete render loop is in `examples/local_file.c`.
 - H.264 is decoded only by the public `h264_vita`/SceVideodec path; this package
   never hides a CPU fallback. Decoded YUV is copied into the bounded P2 display
   ring; the experimental direct-output pool is disabled to avoid silent
-  first-frame stalls and excessive CDRAM reservation on retail hardware.
+  first-frame stalls and excessive CDRAM reservation on retail hardware. The
+  copied U/V plane uses GXM's matching `YUV420P2` sampling format, and the last
+  displayed surface counts as available between 24 fps video deadlines so the
+  UI cannot report false buffering.
 - MOV/MP4 and Matroska sources may contain optional AAC audio. The initial
   zero-based audio ordinal comes from `VitaHwDecoderPlayerConfig.audio_track`;
   an ordinal outside the playable AAC snapshot is clamped to track zero during

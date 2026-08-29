@@ -1652,7 +1652,10 @@ void vita_hw_decoder_get_status(VitaHwDecoderPlayer *player,
 	status->position_ms = status_clock_us / 1000ULL;
 	status->hardware_accelerated = debug.hardware_accelerated;
 	status->direct_rendering = debug.direct_rendering;
-	status->ready_frames = debug.ready_frames;
+	/* The presenter retains the most recently displayed surface between video
+	 * deadlines. Count it as available so a 24 fps stream rendered by a 60 Hz UI
+	 * does not report false buffering for the intervening frames. */
+	status->ready_frames = debug.ready_frames + (debug.have_display ? 1 : 0);
 	status->frame_capacity = debug.queue_capacity;
 	status->fps = debug.source_fps;
 	status->frames_decoded = debug.frames_decoded;
