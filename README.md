@@ -46,6 +46,9 @@ package. `vita_hw_decoder_backend_name()` identifies the package in logs.
 `VitaHwDecoderPlayerStatus.video_bitrate_bps` exposes the H.264 stream bitrate
 reported by FFmpeg, with the container bitrate used only when the stream does
 not provide one. A zero value means the source did not advertise a bitrate.
+`VitaHwDecoderPlayerConfig.audio_track` selects a zero-based AAC stream
+ordinal, and `vita_hw_decoder_select_audio_track()` changes it at the supplied
+playback timestamp without losing pause or volume state.
 
 The source factory creates two independent seekable cursors (audio and video).
 It therefore works with local files and with remote Range readers. Supported
