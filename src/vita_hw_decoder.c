@@ -1247,11 +1247,13 @@ static int open_session(VitaHwDecoderPlayer *player, uint64_t start_position_ms)
 		                                    player->config.volume_percent);
 		player->audio.paused = player->paused;
 	}
-	/* Video is allowed to decode while audio waits on the start gate. One decoded
-	 * frame is sufficient to leave the modal open path; a short upper bound keeps
-	 * a slow remote source responsive and lets the player show normal buffering. */
+	/* Video is allowed to decode while audio waits on the start gate. Do not publish
+	 * an opened session until the decoder has produced an actual picture: an
+	 * accepted-but-silent h264_vita session otherwise plays audio forever behind
+	 * the Preparing video overlay. AUTO can immediately reopen the CPU backend
+	 * when this bounded hardware attempt fails. */
 	uint64_t gate_started_us = sceKernelGetProcessTimeWide();
-	uint64_t deadline = gate_started_us + 600000ULL;
+	uint64_t deadline = gate_started_us + 2500000ULL;
 	int ready = 0;
 	while (!*player->cancel && !player->video.had_error && !player->video.eof &&
 	       sceKernelGetProcessTimeWide() < deadline) {
@@ -1271,6 +1273,12 @@ static int open_session(VitaHwDecoderPlayer *player, uint64_t start_position_ms)
 	if (!ready && player->video.eof) {
 		ret = AVERROR_EOF;
 		log_printf("decoder startup: stage=first-frame ready=0 ret=%d cause=eof\n",
+		           ret);
+		goto fail;
+	}
+	if (!ready) {
+		ret = AVERROR(ETIMEDOUT);
+		log_printf("decoder startup: stage=first-frame ready=0 ret=%d cause=timeout\n",
 		           ret);
 		goto fail;
 	}

@@ -56,7 +56,7 @@ static int hardware_raster_supported(uint32_t width, uint32_t height) {
 #endif
 
 #ifndef SOFTWARE_VIDEO_HARDWARE_DIRECT_ENABLED
-#define SOFTWARE_VIDEO_HARDWARE_DIRECT_ENABLED 1
+#define SOFTWARE_VIDEO_HARDWARE_DIRECT_ENABLED 0
 #endif
 
 #ifndef VITA_HW_DECODER_HAS_H264_VITA
