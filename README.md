@@ -6,9 +6,9 @@ vita2d. This package is hardware-only: initialization returns an error instead
 of silently falling back to CPU H.264.
 
 <p align="center">
-  <img src="screenshots/hardware-decoder.jpeg" alt="Hardware H.264 decoding on PlayStation Vita">
+  <img src="screenshots/hardware-decoder-vitamediadeck.jpeg" alt="VitaMediaDeck hardware H.264 playback running on a physical PlayStation Vita">
 </p>
-<p align="center"><sub>Hardware H.264 playback on PlayStation Vita</sub></p>
+<p align="center"><sub>Current VitaMediaDeck hardware H.264 playback on a physical PlayStation Vita</sub></p>
 
 ## 2.0 ABI migration
 
