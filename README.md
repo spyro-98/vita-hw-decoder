@@ -175,8 +175,9 @@ session after a non-cancellation failure, then reopen the same stream factory
 through the software package. A cancellation result must be returned directly.
 `vita_hw_decoder_backend_name()` identifies the package in logs.
 `VitaHwDecoderPlayerStatus.video_bitrate_bps` exposes the H.264 stream bitrate
-reported by FFmpeg, with the container bitrate used only when the stream does
-not provide one. A zero value means the source did not advertise a bitrate.
+reported by FFmpeg, then the container bitrate. When Matroska advertises neither,
+the decoder derives an average from the seekable file size and duration instead
+of returning an empty HUD value.
 `VitaHwDecoderPlayerConfig.audio_track` selects a zero-based AAC stream
 ordinal, and `vita_hw_decoder_select_audio_track()` changes it at the supplied
 playback timestamp without interrupting the video decoder or losing pause and
