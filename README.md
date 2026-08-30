@@ -90,8 +90,10 @@ complete render loop is in `examples/local_file.c`.
   full-session recovery path instead of reusing the poisoned cursor.
 - `start_position_ms`, seeking, stream-reported bitrate, duration, decoded/shown
   counters, and dropped-frame counters are exposed through the public config and
-  status structures. Runtime seeks reuse the open demuxers, seek backward to a
-  valid H.264 random-access picture, feed that preceding keyframe and its
+  status structures. Runtime seeks reuse the open demuxers and first seek the
+  selected H.264 stream backward, preventing sparse subtitle, attachment, or
+  cover tracks in Matroska from moving the demuxer to a later cluster. They
+  feed that preceding keyframe and its
   dependent packets into H.264, and discard only decoded preroll pictures before
   publishing from the requested timestamp. Compressed reference packets are
   never discarded merely because their PTS precedes a backward-seek target.
@@ -109,7 +111,10 @@ complete render loop is in `examples/local_file.c`.
   accepts the stream but produces no picture, allowing an application-level
   Auto policy to reopen the CPU backend. Seek first-frame waits are capped at
   1.5 seconds and return a timeout when no picture exists, rather than releasing
-  audio into a permanently empty video queue. If a selected audio
+  audio into a permanently empty video queue. A live seek also rejects a first
+  ready frame more than two seconds beyond the requested clock and invokes the
+  checked fresh-session recovery, preventing audio from running behind a black
+  screen after an invalid demux landing. If a selected audio
   stream reaches clean EOF before the
   video, clock ownership moves to the monotonic presentation clock without
   clearing the selected audio pipeline, so position remains continuous, the
