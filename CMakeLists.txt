@@ -58,6 +58,11 @@ target_compile_features(vita_hw_decoder PUBLIC c_std_11)
 target_compile_definitions(vita_hw_decoder PRIVATE
   VITA_HW_DECODER_HAS_H264_VITA=1
   VITA_HW_DECODER_ALLOW_SOFTWARE_FALLBACK=0)
+set(VITA_HW_DECODER_CPU_THREADS "3" CACHE STRING "Experimental seekable H.264 CPU workers (1..3)")
+if(NOT VITA_HW_DECODER_CPU_THREADS MATCHES "^[123]$")
+  message(FATAL_ERROR "VITA_HW_DECODER_CPU_THREADS must be 1, 2 or 3")
+endif()
+target_compile_definitions(vita_hw_decoder PRIVATE SOFTWARE_VIDEO_DECODER_THREADS=${VITA_HW_DECODER_CPU_THREADS})
 target_compile_options(vita_hw_decoder PRIVATE
   -mcpu=cortex-a9 -mfpu=neon -mfloat-abi=hard
   -O3 -ffunction-sections -fdata-sections)
