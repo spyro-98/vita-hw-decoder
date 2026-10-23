@@ -8,7 +8,20 @@ of silently falling back to CPU H.264.
 <p align="center">
   <img src="screenshots/hardware-decoder-vitamediadeck.jpeg" alt="VitaMediaDeck hardware H.264 playback running on a physical PlayStation Vita">
 </p>
-<p align="center"><sub>Current VitaMediaDeck hardware H.264 playback on a physical PlayStation Vita</sub></p>
+<p align="center"><sub>Example VitaMediaDeck hardware H.264 playback on a physical PlayStation Vita</sub></p>
+
+## Current integration and documentation
+
+Package/API version remains **2.0.0**. The 23 October 2026 documentation refresh
+aligns this repository with **VitaMediaDeck 1.4.1 / APP_VER 01.05**; it changes
+no decoder source, public layout or dependency pin.
+
+- [Runtime and ownership contract](docs/RUNTIME.md)
+- [Performance options and measured limits](docs/PERFORMANCE.md)
+- [Build, validation and release guide](docs/VALIDATION.md)
+- [Change record](CHANGELOG.md)
+
+The app shares patched FFmpeg n6.0 across both backends.
 
 ## 2.0 ABI migration
 
@@ -71,7 +84,7 @@ Only V2 limits optional stream/FPS probing to avoid a low-bitrate startup stall;
 V1 HLS and ordinary file-probe settings remain unchanged. No file API/ABI,
 seek or track-switch contract is changed by this extension.
 
-### Finite files (unchanged)
+### Finite files (2.x contract)
 
 ```sh
 export VITASDK=/path/to/vitasdk
@@ -102,8 +115,8 @@ complete render loop is in `examples/local_file.c`.
 - H.264 is decoded only by the public `h264_vita`/SceVideodec path; this package
   never hides a CPU fallback. Presentation follows the known-working online
   renderer contract: GXM samples the decoder's NV12/P2 surfaces as `YVU420P2`,
-  with the original twenty-surface direct pool and an independent copied ring
-  available for startup fallback. The last displayed surface counts as
+  with the original twenty-surface direct pool; the independent copied ring is
+  allocated only if copied output is needed during startup fallback. The last displayed surface counts as
   available between 24 fps video deadlines so the UI cannot report false
   buffering.
 - MOV/MP4 and Matroska sources may contain optional AAC audio. The initial
