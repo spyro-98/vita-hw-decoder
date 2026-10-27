@@ -29,6 +29,7 @@ With sibling VitaMediaDeck and a configured FFmpeg 6 host build, run from the
 app repository:
 
 ```sh
+VMD_HOST_FFMPEG=/path/to/ffmpeg6 bash tests/h264_vita_lifecycle/run-host-tests.sh
 VMD_HOST_FFMPEG=/path/to/ffmpeg6 bash tests/decoder/run-host-tests.sh
 VMD_HOST_FFMPEG=/path/to/ffmpeg6 bash tests/playback_seek/run-host-tests.sh
 VMD_HOST_FFMPEG=/path/to/ffmpeg6 bash tests/player_feedback/run-host-tests.sh
@@ -38,6 +39,19 @@ These cover bounded copy/padding, queue notification/lifetime substitutes,
 MP4/MKV duration, selected-track timing, subtitle seek scheduling and frozen-frame
 restart ownership. Host HW tests substitute SceVideodec and cannot establish
 real Vita decoder compatibility, AudioOut output, GXM behavior, FPS or power.
+
+## 27 October integration result
+
+VitaMediaDeck's standard 1.4.1 build at app commit `5419ffe` passed host lifecycle,
+HLS/DASH, decoder-wrapper and seek/subtitle regressions, plus native Release/LTO
+and import/license audits. The user then confirmed successful IPTV HW playback,
+including sources described as 1080p. This is integrated-app HW feedback;
+selected rendition, FPS, clocks and energy were not independently measured.
+The codec lifecycle patch is applied in the app's FFmpeg builder, not this
+repository's standalone builder. Its actual-source host harness uses real FFmpeg
+SPS/PPS parsing with substituted Vita APIs; it does not execute SceVideodec.
+
+See the [app report](https://github.com/spyro-98/VitaMediaDeck/blob/feature/iptv/docs/iptv-hw-startup-2026-10-27.md) for the exact tested VPK hash and evidence boundaries.
 
 ## Physical acceptance
 

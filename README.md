@@ -23,6 +23,18 @@ no decoder source, public layout or dependency pin.
 
 The app shares patched FFmpeg n6.0 across both backends.
 
+On 27 October 2026, the user confirmed excellent IPTV HW playback in
+VitaMediaDeck 1.4.1, including sources described as 1080p. App commit `5419ffe`
+corrects the app's HLS timestamps and patches its FFmpeg `h264_vita` lifecycle:
+one initialization for the first in-band SPS/PPS access unit and idempotent
+resource cleanup after failed reinitialization. The backend correction is shared
+by local/Jellyfin HW paths; only IPTV was reported in this latest console test.
+It is applied by the **VitaMediaDeck FFmpeg builder**, not this repository's
+standalone builder. This documentation update changes no package code, ABI or
+standalone dependency pin. Source labels are not measurements of the selected
+rendition and do not expand the live API's limits. See the
+[implementation and console result](https://github.com/spyro-98/VitaMediaDeck/blob/feature/iptv/docs/iptv-hw-startup-2026-10-27.md).
+
 ## 2.0 ABI migration
 
 Version 2 adds `open_with_cancel` to `VitaHwDecoderStreamFactory` and the
@@ -72,8 +84,9 @@ Codec internals and existing file seek/track-switch recovery remain intact.
 
 VitaMediaDeck host tests validated forward-only demux/decode with the pinned
 FFmpeg 6.0 base at a nonzero PTS origin. Native `-O3` compilation passes.
-Actual Vita live A/V synchronization, audio output and long-session stability
-still require hardware testing; this API is experimental, not broadcast-certified.
+VitaMediaDeck's corrected 1.4.1 IPTV HW path now has user-reported physical
+playback acceptance. Detailed A/V measurements and long-session stability remain
+separate checks; this API is experimental, not broadcast-certified.
 
 The live options also accept `version = 2` for application-remuxed single-program
 MPEG-TS. The options remain 16 bytes: the two V1 reserved words are exposed as

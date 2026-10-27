@@ -34,9 +34,11 @@ fps and 8 ms video lag in the reported sample. API readback: CPU 333, BUS/GPU
 material tested. It does not validate 720p60, every bitrate/profile, a complete
 333/166/166 clock profile, battery savings or a fresh 1.4.1 physical run.
 
-The app's standard clock request remains 444/222/222/111 MHz when app control is
-selected. API readback must be measured; requested clocks are not evidence of
-actual clocks. PSVshell mode leaves control external. A physical comparison
+VitaMediaDeck now requests CPU 333 MHz for HW and 444 MHz for SW, with
+BUS/GPU/XBAR 222/222/111 MHz. The two CPU targets are independently configurable
+in the app; neither decoder package sets system clocks. API readback must be
+measured: a request is not proof of the actual clock. PSVshell manual hooks take
+priority, and explicit PSVshell mode writes no frequencies. A physical comparison
 requires the same file, intervals, backend, clocks, temperature, audio/subtitles
 and UI load, plus throughput, dropped pictures, lag, memory and battery data.
 
@@ -44,3 +46,13 @@ The detailed evidence is in VitaMediaDeck's
 [PlayerFix report](https://github.com/spyro-98/VitaMediaDeck/blob/feature/iptv/docs/console-validation-playerfix-2026-10-23.md).
 The paper/algorithm research is historical candidate work, not implemented speed
 or energy gains. See [validation](VALIDATION.md) for reproducible checks.
+
+## 27 October: integrated IPTV HW confirmation
+
+The user confirmed excellent IPTV hardware playback after app commit `5419ffe`
+fixed HLS timestamps and the app-built FFmpeg codec lifecycle, including several
+sources described as 1080p. This is a successful physical playback observation,
+not a measured 1080p/FPS, battery or clock result. It does not change the live API
+or rendition-selection limits. The patch belongs to VitaMediaDeck's FFmpeg build;
+the standalone package builder is unchanged. See the
+[app report](https://github.com/spyro-98/VitaMediaDeck/blob/feature/iptv/docs/iptv-hw-startup-2026-10-27.md).
