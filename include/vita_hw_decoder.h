@@ -154,6 +154,9 @@ int vita_hw_decoder_present_rect(VitaHwDecoderPlayer *player,
  * draw and exclude concurrent present/render_complete calls for this player. */
 void vita_hw_decoder_discard_video_to_clock(VitaHwDecoderPlayer *player);
 void vita_hw_decoder_render_complete(VitaHwDecoderPlayer *player);
+/* Additive telemetry API: last picture actually presented, on the media clock.
+ * Existing status/config structures and their ABI remain unchanged. */
+int vita_hw_decoder_presented_time(VitaHwDecoderPlayer *player,uint64_t *pts_us);
 void vita_hw_decoder_get_status(VitaHwDecoderPlayer *player,
 	                           VitaHwDecoderPlayerStatus *status);
 

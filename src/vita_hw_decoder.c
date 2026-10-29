@@ -1337,8 +1337,7 @@ static int open_session(VitaHwDecoderPlayer *player, uint64_t start_position_ms)
 	}
 	if (player->live_input &&
 	    (audio_index < 0 || video_parameters->width <= 0 ||
-	     video_parameters->height <= 0 || video_parameters->width > 1280 ||
-	     video_parameters->height > 720)) {
+	     video_parameters->height <= 0)) {
 		ret = AVERROR_DECODER_NOT_FOUND;
 		goto fail;
 	}
@@ -1929,6 +1928,11 @@ void vita_hw_decoder_render_complete(VitaHwDecoderPlayer *player) {
 	if (player && player->opened) vita_hw_software_video_render_complete(&player->video);
 }
 
+int vita_hw_decoder_presented_time(VitaHwDecoderPlayer *player,uint64_t *pts_us){
+ if(pts_us)*pts_us=0;
+ if(!player||!player->opened||!pts_us)return 0;
+ int have=0;vita_hw_software_video_buffer_status(&player->video,NULL,&have,pts_us);return have;
+}
 void vita_hw_decoder_get_status(VitaHwDecoderPlayer *player,
 	                           VitaHwDecoderPlayerStatus *status) {
 	if (!status) return;
