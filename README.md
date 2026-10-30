@@ -128,7 +128,7 @@ complete render loop is in `examples/local_file.c`.
 - H.264 is decoded only by the public `h264_vita`/SceVideodec path; this package
   never hides a CPU fallback. Presentation follows the known-working online
   renderer contract: GXM samples the decoder's NV12/P2 surfaces as `YVU420P2`,
-  with the original twenty-surface direct pool; the independent copied ring is
+  with up to twenty direct surfaces below Full HD and eight above 720p; the independent copied ring is
   allocated only if copied output is needed during startup fallback. The last displayed surface counts as
   available between 24 fps video deadlines so the UI cannot report false
   buffering.
@@ -299,3 +299,12 @@ not need to reconstruct its private link path.
 
 Licensed GPL-3.0-only. See `THIRD_PARTY_NOTICES.md` for FFmpeg, wiliwili,
 ReAvPlayer and VitaSDK requirements.
+
+### Beta integration (VitaMediaDeck 1.4.4)
+
+Volume uses 0–100% for normal output and 100–150% for PCM boost, clamped at 150%.
+AAC queue samples stay unmodified; the output consumer applies the current gain
+and saturates boosted samples. The Full HD direct-output pool uses eight
+surfaces and can retain a smaller queue under allocation pressure when at least
+six surfaces were allocated. Host lifecycle checks do not establish console
+playback performance or the cause of a system reset.
